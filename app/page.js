@@ -21,35 +21,39 @@ export default function Home() {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setIsLoading(true)
-        const [menuData, categoriesData] = await Promise.all([getMenu(), getCategories()])
+        setIsLoading(true);
+        const [menuData, categoriesData] = await Promise.all([getMenu(), getCategories()]);
+        console.log('menuData', menuData)
+        console.log('categoriesData', categoriesData)
 
-        // Añadir la propiedad 'customizable' a cada plato
         const menuWithCustomizable = menuData.map((dish) => ({
           ...dish,
-          customizable: true, // Puedes ajustar esto según tus necesidades
-        }))
+          customizable: true,
+        }));
 
-        setMenu(menuWithCustomizable)
-        setCategories(categoriesData)
-        setFilteredCategories(getFilteredCategories(menuWithCustomizable, categoriesData))
+        setMenu(menuWithCustomizable);
+        console.log('menuWithCustomizable', menuWithCustomizable)
+        setCategories(categoriesData);
+        console.log('categoriesData', categoriesData)
+        setFilteredCategories(getFilteredCategories(menuWithCustomizable, categoriesData));
+        console.log('filteredCategories', getFilteredCategories(menuWithCustomizable, categoriesData))
       } catch (err) {
-        console.error("Error fetching data:", err)
-        setError(err.message)
+        console.error("Error fetching data:", err);
+        setError("No se pudo cargar el menú. Por favor, inténtalo de nuevo más tarde.");
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
-    }
+    };
 
-    fetchData()
-  }, [])
+    fetchData();
+  }, []);
 
   const updateCart = (dishId, quantity, observation = "") => {
     setCart((prevCart) => {
-      const newQuantity = (prevCart[dishId]?.quantity || 0) + quantity
+      const newQuantity = (prevCart[dishId]?.quantity || 0) + quantity;
       if (newQuantity <= 0) {
-        const { [dishId]: _, ...rest } = prevCart
-        return rest
+        const { [dishId]: _, ...rest } = prevCart;
+        return rest;
       }
       return {
         ...prevCart,
@@ -57,9 +61,9 @@ export default function Home() {
           quantity: newQuantity,
           observation: observation || prevCart[dishId]?.observation || "",
         },
-      }
-    })
-  }
+      };
+    });
+  };
 
   if (isLoading) {
     return (
@@ -105,74 +109,74 @@ export default function Home() {
         <CategorySelector categories={filteredCategories} />
       </nav>
       <main className="container mx-auto px-4 py-6 flex-grow">
-        {filteredCategories.map((category, categoryIndex) => (
-          <section key={categoryIndex} id={category} className="mb-8">
-            <h2 className="text-2xl font-serif font-bold mb-4 text-stone-800 border-b border-stone-300 pb-2">
-              {category}
-            </h2>
-            <div className="space-y-4">
-              {menu
-                .filter((dish) => dish.category === category)
-                .map((dish) => (
-                  <Card key={dish.dishId} className="overflow-hidden bg-white shadow rounded-lg">
-                    <div className="flex flex-col md:flex-row">
-                      {dish.image && (
-                        <Image
-                          src={dish.image || "/placeholder.svg"}
-                          alt={dish.name}
-                          width={150}
-                          height={150}
-                          className="object-cover w-full h-40 md:w-40 md:h-auto"
-                        />
+  {filteredCategories.map((category) => (
+    <section key={category} id={category} className="mb-8">
+      <h2 className="text-2xl font-serif font-bold mb-4 text-stone-800 border-b border-stone-300 pb-2">
+        {category}
+      </h2>
+      <div className="space-y-4">
+        {menu
+          .filter((dish) => dish.category === category)
+          .map((dish) => (
+            <Card key={dish.dishId} className="overflow-hidden bg-white shadow rounded-lg">
+              <div className="flex flex-col md:flex-row">
+                {dish.image && (
+                  <Image
+                    src={dish.image || "/placeholder.svg"}
+                    alt={dish.name}
+                    width={150}
+                    height={150}
+                    className="object-cover w-full h-40 md:w-40 md:h-auto"
+                  />
+                )}
+                <div className="flex-grow p-4">
+                  <CardHeader className="p-0">
+                    <CardTitle className="flex items-center text-black">
+                      {dish.name}
+                      {dish.isVegetarian && <Leaf className="ml-2 text-green-500" size={16} />}
+                      {dish.isGlutenFree && <Wheat className="ml-2 text-amber-500" size={16} />}
+                      {dish.customizable && <span className="ml-2 text-blue-500 text-sm">(Personalizable)</span>}
+                    </CardTitle>
+                    <CardDescription>{dish.description}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="p-0 mt-2">
+                    <p className="text-lg font-semibold text-stone-800">Precio: ${dish.price}</p>
+                  </CardContent>
+                  <CardFooter className="p-0 mt-4">
+                    <div className="flex items-center space-x-2">
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => updateCart(dish.dishId, -1)}
+                        disabled={!cart[dish.dishId]}
+                      >
+                        <Minus className="h-4 w-4" />
+                      </Button>
+                      <span className="w-8 text-center">{cart[dish.dishId]?.quantity || 0}</span>
+                      <Button variant="outline" size="icon" onClick={() => updateCart(dish.dishId, 1)}>
+                        <Plus className="h-4 w-4" />
+                      </Button>
+                      {dish.customizable && (
+                        <Dialog>
+                          <DialogTrigger asChild>
+                            <Button variant="outline" size="sm" className="ml-2">
+                              <Edit className="h-4 w-4 mr-2" />
+                              Personalizar
+                            </Button>
+                          </DialogTrigger>
+                          <CustomizeDialog dish={dish} cartItem={cart[dish.dishId]} updateCart={updateCart} />
+                        </Dialog>
                       )}
-                      <div className="flex-grow p-4">
-                        <CardHeader className="p-0">
-                          <CardTitle className="flex items-center">
-                            {dish.name}
-                            {dish.isVegetarian && <Leaf className="ml-2 text-green-500" size={16} />}
-                            {dish.isGlutenFree && <Wheat className="ml-2 text-amber-500" size={16} />}
-                            {dish.customizable && <span className="ml-2 text-blue-500 text-sm">(Personalizable)</span>}
-                          </CardTitle>
-                          <CardDescription>{dish.description}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-0 mt-2">
-                          <p className="text-lg font-semibold text-stone-800">Precio: ${dish.price}</p>
-                        </CardContent>
-                        <CardFooter className="p-0 mt-4">
-                          <div className="flex items-center space-x-2">
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => updateCart(dish.dishId, -1)}
-                              disabled={!cart[dish.dishId]}
-                            >
-                              <Minus className="h-4 w-4" />
-                            </Button>
-                            <span className="w-8 text-center">{cart[dish.dishId]?.quantity || 0}</span>
-                            <Button variant="outline" size="icon" onClick={() => updateCart(dish.dishId, 1)}>
-                              <Plus className="h-4 w-4" />
-                            </Button>
-                            {dish.customizable && (
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button variant="outline" size="sm" className="ml-2">
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Personalizar
-                                  </Button>
-                                </DialogTrigger>
-                                <CustomizeDialog dish={dish} cartItem={cart[dish.dishId]} updateCart={updateCart} />
-                              </Dialog>
-                            )}
-                          </div>
-                        </CardFooter>
-                      </div>
                     </div>
-                  </Card>
-                ))}
-            </div>
-          </section>
-        ))}
-      </main>
+                  </CardFooter>
+                </div>
+              </div>
+            </Card>
+          ))}
+      </div>
+    </section>
+  ))}
+</main>
 
       <Cart cart={cart} menu={menu} updateCart={updateCart} />
 

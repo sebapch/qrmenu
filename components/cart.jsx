@@ -1,8 +1,15 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { ShoppingCart, X, Edit2 } from "lucide-react"
-import { Dialog, DialogTrigger } from "@/components/ui/dialog"
-import CustomizeDialog from "./CustomizeDialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 export default function Cart({ cart, menu, updateCart }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -15,6 +22,10 @@ export default function Cart({ cart, menu, updateCart }) {
     .filter((item) => item && item.quantity > 0)
 
   const total = cartItems.reduce((sum, item) => sum + Number.parseFloat(item.price) * item.quantity, 0)
+
+  const handleObservationChange = (dishId, newObservation) => {
+    updateCart(dishId, 0, newObservation)
+  }
 
   return (
     <>
@@ -47,16 +58,33 @@ export default function Cart({ cart, menu, updateCart }) {
                       </p>
                       {item.observation && <p className="text-xs text-gray-500 mt-1">Nota: {item.observation}</p>}
                     </div>
-                    {item.customizable && (
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="ghost" size="sm">
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <CustomizeDialog dish={item} cartItem={cart[item.dishId]} updateCart={updateCart} />
-                      </Dialog>
-                    )}
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant="ghost" size="sm">
+                          <Edit2 className="h-4 w-4" />
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Editar {item.name}</DialogTitle>
+                          <DialogDescription>Añade una nota o modifica tu pedido aquí.</DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="flex items-center space-x-2">
+                            <Button onClick={() => updateCart(item.dishId, -1)} disabled={item.quantity <= 1}>
+                              -
+                            </Button>
+                            <span>{item.quantity}</span>
+                            <Button onClick={() => updateCart(item.dishId, 1)}>+</Button>
+                          </div>
+                          <Textarea
+                            placeholder="Añade una nota a tu pedido..."
+                            value={item.observation || ""}
+                            onChange={(e) => handleObservationChange(item.dishId, e.target.value)}
+                          />
+                        </div>
+                      </DialogContent>
+                    </Dialog>
                   </div>
                 ))}
                 <div className="font-bold text-xl mt-4">Total: ${total.toFixed(2)}</div>
