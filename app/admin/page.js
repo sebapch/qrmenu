@@ -6,8 +6,8 @@ import Link from 'next/link';
 import { getMenu, getCategories, addCategory, addDish, updateDish, deleteDish } from '@/lib/menuActions';
 
 import CategoriesManager from './components/CategoriesManager';
-import AddDish from './components/AddDish';
 import EditMenu from './components/EditMenu';
+import AddDish from './components/AddDish';
 
 export default function AdminPage() {
   const [categories, setCategories] = useState([]);
