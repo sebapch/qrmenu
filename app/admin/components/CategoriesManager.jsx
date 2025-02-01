@@ -24,7 +24,8 @@ export default function CategoriesManager() {
       setCategories(fetchedCategories)
       // Convertir el objeto de categorías a array para la visualización
       const categoriesArray = Object.values(fetchedCategories)
-      setCategoryArray(categoriesArray)
+      .sort((a, b) => a.order - b.order) // Ordenar por el campo order
+    setCategoryArray(categoriesArray)
     } catch (error) {
       toast({
         variant: "destructive",
