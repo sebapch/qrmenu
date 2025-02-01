@@ -7,7 +7,8 @@ import { addCategory, getCategories, updateCategoryOrder } from "@/lib/menuActio
 import { ArrowUp, ArrowDown } from "lucide-react"
 
 export default function CategoriesManager() {
-  const [categories, setCategories] = useState([])
+  const [categories, setCategories] = useState({})
+  const [categoryArray, setCategoryArray] = useState([])
   const [newCategory, setNewCategory] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
@@ -21,6 +22,9 @@ export default function CategoriesManager() {
     try {
       const fetchedCategories = await getCategories()
       setCategories(fetchedCategories)
+      // Convertir el objeto de categorías a array para la visualización
+      const categoriesArray = Object.values(fetchedCategories)
+      setCategoryArray(categoriesArray)
     } catch (error) {
       toast({
         variant: "destructive",
@@ -41,7 +45,7 @@ export default function CategoriesManager() {
       return
     }
 
-    if (categories.some((cat) => cat.name.toLowerCase() === newCategory.toLowerCase().trim())) {
+    if (categories[newCategory.toLowerCase().trim()]) {
       toast({
         variant: "destructive",
         title: "Error",
@@ -73,49 +77,47 @@ export default function CategoriesManager() {
   }
 
   const moveCategory = (index, direction) => {
-    const newCategories = [...categories];
+    const newCategoryArray = [...categoryArray];
     const newIndex = direction === 'up' ? index - 1 : index + 1;
 
-    if (newIndex >= 0 && newIndex < categories.length) {
+    if (newIndex >= 0 && newIndex < categoryArray.length) {
       // Intercambiar categorías
-      [newCategories[index], newCategories[newIndex]] = 
-      [newCategories[newIndex], newCategories[index]];
+      [newCategoryArray[index], newCategoryArray[newIndex]] = 
+      [newCategoryArray[newIndex], newCategoryArray[index]];
 
       // Actualizar orden
-      const updatedCategories = newCategories.map((cat, idx) => ({
+      const updatedCategories = newCategoryArray.map((cat, idx) => ({
         ...cat,
         order: idx + 1
       }));
 
-      setCategories(updatedCategories);
+      setCategoryArray(updatedCategories);
       setHasChanges(true);
     }
   };
 
   const handleSaveOrder = async () => {
-    if (!categories.length) return;
+    if (!categoryArray.length) return;
 
     setIsLoading(true);
     try {
-      // Enviar solo los nombres en el orden correcto
-      const categoryNames = categories.map(cat => cat.name);
+      const categoryNames = categoryArray.map(cat => cat.name);
       const success = await updateCategoryOrder(categoryNames);
       
       if (success) {
         setHasChanges(false);
         // Actualizar las categorías localmente con el nuevo orden
-        const updatedCategories = categories.map((cat, index) => ({
+        const updatedCategories = categoryArray.map((cat, index) => ({
           ...cat,
           order: index + 1
         }));
-        setCategories(updatedCategories);
+        setCategoryArray(updatedCategories);
         
         toast({
           title: "Éxito",
           description: "Orden actualizado correctamente.",
         });
         
-        // Forzar una recarga de las categorías
         await fetchCategories();
       } else {
         throw new Error('No se pudo actualizar el orden');
@@ -127,7 +129,7 @@ export default function CategoriesManager() {
         title: "Error",
         description: "No se pudo guardar el orden de las categorías.",
       });
-      await fetchCategories(); // Revertir cambios
+      await fetchCategories();
     } finally {
       setIsLoading(false);
     }
@@ -167,40 +169,40 @@ export default function CategoriesManager() {
       </div>
 
       <div className="space-y-2 min-h-[50px]">
-  {categories.map((category, index) => (
-    <div
-      key={category.name}
-      className="bg-gray-100 p-3 rounded-lg flex justify-between items-center shadow-sm hover:shadow transition-shadow duration-200"
-    >
-      <span>{category.name}</span>
-      <div className="flex items-center gap-2">
-        <span className="text-gray-500 text-sm mr-2">
-          Orden: {category.order}
-        </span>
-        <div className="flex gap-1">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => moveCategory(index, 'up')}
-            disabled={index === 0 || isLoading}
-            className="h-8 w-8"
+        {categoryArray.map((category, index) => (
+          <div
+            key={category.name}
+            className="bg-gray-100 p-3 rounded-lg flex justify-between items-center shadow-sm hover:shadow transition-shadow duration-200"
           >
-            <ArrowUp className="h-4 w-4" />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => moveCategory(index, 'down')}
-            disabled={index === categories.length - 1 || isLoading}
-            className="h-8 w-8"
-          >
-            <ArrowDown className="h-4 w-4" />
-          </Button>
-        </div>
+            <span>{category.name}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-gray-500 text-sm mr-2">
+                Orden: {category.order}
+              </span>
+              <div className="flex gap-1">
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => moveCategory(index, 'up')}
+                  disabled={index === 0 || isLoading}
+                  className="h-8 w-8"
+                >
+                  <ArrowUp className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => moveCategory(index, 'down')}
+                  disabled={index === categoryArray.length - 1 || isLoading}
+                  className="h-8 w-8"
+                >
+                  <ArrowDown className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
-    </div>
-  ))}
-</div>
     </div>
   )
 }

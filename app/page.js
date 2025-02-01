@@ -41,10 +41,8 @@ export default function Home() {
         // Asegurarse de que menuData es un array
         const validMenuData = Array.isArray(menuData) ? menuData : [];
 
-        // Asegurarse de que categoriesData es un array
-        const validCategoriesData = Array.isArray(categoriesData)
-          ? categoriesData
-          : [];
+        // categoriesData ahora es un objeto, no necesitamos validar si es array
+        const validCategoriesData = categoriesData || {};
 
         // Agregar customizable a todos los platos
         const menuWithCustomizable = validMenuData.map((dish) => ({
@@ -55,13 +53,16 @@ export default function Home() {
         }));
 
         setMenu(menuWithCustomizable);
-        console.log(menuWithCustomizable)
         setCategories(validCategoriesData);
+
+        // Convertir las categorías a array para getFilteredCategories
+        const categoriesArray = Object.values(validCategoriesData)
+          .sort((a, b) => a.order - b.order);
 
         // Obtener categorías filtradas
         const filtered = getFilteredCategories(
           menuWithCustomizable,
-          validCategoriesData
+          categoriesArray
         );
         setFilteredCategories(filtered);
       } catch (err) {

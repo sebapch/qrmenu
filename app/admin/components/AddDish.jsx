@@ -21,6 +21,7 @@ export default function AddDish({ categories, setDishes }) {
   })
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const categoriesArray = Object.values(categories).sort((a, b) => a.order - b.order)
 
   const handleAddDish = async (e) => {
     e.preventDefault()
@@ -48,14 +49,8 @@ export default function AddDish({ categories, setDishes }) {
       formData.append("isGlutenFree", newDish.isGlutenFree.toString())
       formData.append("customizable", newDish.customizable.toString())
 
-      // Añadir imagen solo si existe
       if (newDish.image) {
         formData.append("image", newDish.image)
-      }
-
-      // Log para debug
-      for (let [key, value] of formData.entries()) {
-        console.log(`${key}: ${value}`);
       }
 
       const response = await addDish(formData)
@@ -89,6 +84,8 @@ export default function AddDish({ categories, setDishes }) {
       setIsLoading(false)
     }
   }
+
+  
 
   const handleImageUpload = (e) => {
     const file = e.target.files[0]
@@ -135,7 +132,7 @@ export default function AddDish({ categories, setDishes }) {
               <SelectValue placeholder="Selecciona una categoría" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((category) => (
+              {categoriesArray.map((category) => (
                 <SelectItem key={category.name} value={category.name}>
                   {category.name}
                 </SelectItem>
