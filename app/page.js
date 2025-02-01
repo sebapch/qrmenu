@@ -41,18 +41,21 @@ export default function Home() {
         // Asegurarse de que menuData es un array
         const validMenuData = Array.isArray(menuData) ? menuData : [];
 
+        console.log('validMenuData', validMenuData);
+
         // categoriesData ahora es un objeto, no necesitamos validar si es array
         const validCategoriesData = categoriesData || {};
 
         // Agregar customizable a todos los platos
         const menuWithCustomizable = validMenuData.map((dish) => ({
           ...dish,
-          customizable: true,
+          customizable: dish.customizable || false,
           isVegetarian: dish.isVegetarian || false,
           isGlutenFree: dish.isGlutenFree || false,
         }));
 
         setMenu(menuWithCustomizable);
+        console.log('menuWithCustomizable', menuWithCustomizable);
         setCategories(validCategoriesData);
 
         // Convertir las categorías a array para getFilteredCategories
@@ -123,9 +126,9 @@ export default function Home() {
           </p>
           <div className="flex justify-center mt-2 space-x-2">
             <Button variant="ghost" size="icon">
-              <Image
-                src="/placeholder.svg?height=24&width=24"
-                alt="Español"
+            <Image
+                alt="Italia"
+                src="http://purecatamphetamine.github.io/country-flag-icons/3x2/IT.svg"
                 width={24}
                 height={24}
               />
@@ -139,9 +142,9 @@ export default function Home() {
               />
             </Button>
             <Button variant="ghost" size="icon">
-              <Image
-                src="/placeholder.svg?height=24&width=24"
-                alt="Italiano"
+            <Image
+                alt="España"
+                src="http://purecatamphetamine.github.io/country-flag-icons/3x2/ES.svg"
                 width={24}
                 height={24}
               />
@@ -163,35 +166,45 @@ export default function Home() {
                 .filter((dish) => dish.category === category)
                 .map((dish) => (
                   <Card key={dish.dishId} className="overflow-hidden bg-white shadow rounded-lg">
-                    <div className="flex flex-col md:flex-row">
-                      {dish.image && (
-                        <div className="relative w-full h-40 md:w-40 md:h-40">
-                          <Image
-                            src={dish.image}
-                            alt={dish.name}
-                            fill
-                            className="object-cover"
-                          />
+                  <div className="flex flex-col md:flex-row relative">
+                    {/* Dietary Indicators */}
+                    <div className="absolute top-2 right-2 flex gap-2 z-10">
+                      {dish.isVegetarian && (
+                        <div className="bg-green-100 p-1.5 rounded-full">
+                          <Leaf className="h-4 w-4 text-green-600" />
                         </div>
                       )}
-                      <div className="flex-grow p-4">
-                        <CardHeader className="p-0">
-                          <CardTitle className="flex items-center text-black">
-                            {dish.name}
-                            {dish.isVegetarian && <Leaf className="ml-2 text-green-500" size={16} />}
-                            {dish.isGlutenFree && <Wheat className="ml-2 text-amber-500" size={16} />}
-                            {dish.customizable && (
-                              <span className="ml-2 text-blue-500 text-sm">(Personalizable)</span>
-                            )}
-                          </CardTitle>
-                          <CardDescription>{dish.description}</CardDescription>
-                        </CardHeader>
-                        <CardContent className="p-0 mt-2">
-                          <p className="text-lg font-semibold text-stone-800">
-                            Precio: ${dish.price}
-                          </p>
-                        </CardContent>
-                        <CardFooter className="p-0 mt-4">
+                      {dish.isGlutenFree && (
+                        <div className="bg-amber-100 p-1.5 rounded-full">
+                          <Wheat className="h-4 w-4 text-amber-600" />
+                        </div>
+                      )}
+                    </div>
+
+                    {dish.image && (
+                      <div className="relative w-full h-40 md:w-40 md:h-40">
+                        <Image
+                          src={dish.image}
+                          alt={dish.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                    )}
+                    <div className="flex-grow p-4">
+                      <CardHeader className="p-0">
+                        <CardTitle className="text-black">
+                          {dish.name}
+                        </CardTitle>
+                        <CardDescription>{dish.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-0 mt-2">
+                        <p className="text-lg font-semibold text-stone-800">
+                          Precio: ${dish.price}
+                        </p>
+                      </CardContent>
+                      <CardFooter className="p-0 mt-4">
+                        <div className="flex items-center space-x-2 flex-wrap gap-y-2">
                           <div className="flex items-center space-x-2">
                             <Button
                               variant="outline"
@@ -211,21 +224,22 @@ export default function Home() {
                             >
                               <Plus className="h-4 w-4" />
                             </Button>
-                            {dish.customizable && (
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button variant="outline" size="sm" className="ml-2">
-                                    <Edit className="h-4 w-4 mr-2" />
-                                    Personalizar
-                                  </Button>
-                                </DialogTrigger>
-                                <CustomizeDialog
-                                  dish={dish}
-                                  cartItem={cart[dish.dishId]}
-                                  updateCart={updateCart}
-                                />
-                              </Dialog>
-                            )}
+                          </div>
+                          {dish.customizable && (
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm">
+                                  <Edit className="h-4 w-4 mr-2" />
+                                  Personalizar
+                                </Button>
+                              </DialogTrigger>
+                              <CustomizeDialog
+                                dish={dish}
+                                cartItem={cart[dish.dishId]}
+                                updateCart={updateCart}
+                              />
+                            </Dialog>
+                          )}
                           </div>
                         </CardFooter>
                       </div>
