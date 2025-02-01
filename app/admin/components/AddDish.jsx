@@ -24,55 +24,69 @@ export default function AddDish({ categories, setDishes }) {
 
   const handleAddDish = async (e) => {
     e.preventDefault()
-    if (newDish.name && newDish.description && newDish.price && newDish.category) {
-      setIsLoading(true)
-      try {
-        const formData = new FormData()
-        Object.keys(newDish).forEach((key) => {
-          if (key === "image") {
-            if (newDish.image) {
-              formData.append("image", newDish.image)
-            }
-          } else {
-            formData.append(key, newDish[key])
-          }
-        })
-
-        const response = await addDish(formData)
-        if (response.statusCode === 201) {
-          setDishes((prev) => [...prev, response.dish])
-          setNewDish({
-            name: "",
-            description: "",
-            price: "",
-            category: "",
-            image: null,
-            isVegetarian: false,
-            isGlutenFree: false,
-            customizable: false,
-          })
-          toast({
-            title: "Plato añadido",
-            description: "El plato se ha añadido con éxito.",
-          })
-        } else {
-          throw new Error(response.message || "No se pudo añadir el plato")
-        }
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: error.message || "No se pudo añadir el plato. Por favor, intente de nuevo.",
-        })
-      } finally {
-        setIsLoading(false)
-      }
-    } else {
+    
+    // Validación inicial
+    if (!newDish.name || !newDish.description || !newDish.price || !newDish.category) {
       toast({
         variant: "destructive",
         title: "Error",
         description: "Por favor, complete todos los campos obligatorios.",
       })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const formData = new FormData()
+      
+      // Añadir cada campo al FormData, convirtiendo booleanos a strings
+      formData.append("name", newDish.name)
+      formData.append("description", newDish.description)
+      formData.append("price", newDish.price)
+      formData.append("category", newDish.category)
+      formData.append("isVegetarian", newDish.isVegetarian.toString())
+      formData.append("isGlutenFree", newDish.isGlutenFree.toString())
+      formData.append("customizable", newDish.customizable.toString())
+
+      // Añadir imagen solo si existe
+      if (newDish.image) {
+        formData.append("image", newDish.image)
+      }
+
+      // Log para debug
+      for (let [key, value] of formData.entries()) {
+        console.log(`${key}: ${value}`);
+      }
+
+      const response = await addDish(formData)
+      
+      if (response.statusCode === 201) {
+        setDishes((prev) => [...prev, response.dish])
+        // Resetear el formulario
+        setNewDish({
+          name: "",
+          description: "",
+          price: "",
+          category: "",
+          image: null,
+          isVegetarian: false,
+          isGlutenFree: false,
+          customizable: false,
+        })
+        
+        toast({
+          title: "Éxito",
+          description: "El plato se ha añadido correctamente.",
+        })
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "No se pudo añadir el plato. Por favor, intente de nuevo.",
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
