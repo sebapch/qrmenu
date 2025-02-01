@@ -6,16 +6,14 @@ import { ShoppingCart, X } from "lucide-react"
 export default function Cart({ cart, menu, updateCart, observation, setObservation }) {
   const [isOpen, setIsOpen] = useState(false)
 
-  const flatMenu = Object.values(menu).flat()
-
   const cartItems = Object.entries(cart)
     .map(([dishId, quantity]) => {
-      const dish = flatMenu.find((d) => d.dishId === dishId)
+      const dish = menu.find((d) => d.dishId === dishId)
       return { ...dish, quantity }
     })
-    .filter((item) => item.quantity > 0)
+    .filter((item) => item && item.quantity > 0)
 
-  const total = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const total = cartItems.reduce((sum, item) => sum + Number.parseFloat(item.price) * item.quantity, 0)
 
   return (
     <>
@@ -42,7 +40,7 @@ export default function Cart({ cart, menu, updateCart, observation, setObservati
                     <span>
                       {item.name} x {item.quantity}
                     </span>
-                    <span>${(item.price * item.quantity).toFixed(2)}</span>
+                    <span>${(Number.parseFloat(item.price) * item.quantity).toFixed(2)}</span>
                   </div>
                 ))}
                 <div className="mt-4">
