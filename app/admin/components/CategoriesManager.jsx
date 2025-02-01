@@ -9,7 +9,6 @@ import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd"
 export default function CategoriesManager() {
   const [categories, setCategories] = useState([])
   const [newCategory, setNewCategory] = useState("")
-  const [newCategoryOrder, setNewCategoryOrder] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
 
@@ -20,7 +19,7 @@ export default function CategoriesManager() {
   const fetchCategories = async () => {
     try {
       const fetchedCategories = await getCategories()
-      setCategories(fetchedCategories.sort((a, b) => a.order - b.order))
+      setCategories(fetchedCategories)
     } catch (error) {
       toast({
         variant: "destructive",
@@ -32,36 +31,45 @@ export default function CategoriesManager() {
 
   const handleAddCategory = async (e) => {
     e.preventDefault()
-    if (newCategory && !categories.some((cat) => cat.name === newCategory)) {
-      setIsLoading(true)
-      try {
-        const success = await addCategory(newCategory, newCategoryOrder)
-        if (success) {
-          await fetchCategories()
-          setNewCategory("")
-          setNewCategoryOrder(0)
-          toast({
-            title: "Categoría añadida",
-            description: "La categoría se ha añadido con éxito.",
-          })
-        } else {
-          throw new Error("No se pudo añadir la categoría")
-        }
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "No se pudo añadir la categoría. Por favor, intente de nuevo.",
-        })
-      } finally {
-        setIsLoading(false)
-      }
-    } else {
+    if (!newCategory.trim()) {
       toast({
         variant: "destructive",
         title: "Error",
-        description: "La categoría ya existe o está vacía.",
+        description: "El nombre de la categoría no puede estar vacío.",
       })
+      return
+    }
+
+    if (categories.some((cat) => cat.name.toLowerCase() === newCategory.toLowerCase().trim())) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Esta categoría ya existe.",
+      })
+      return
+    }
+
+    setIsLoading(true)
+    try {
+      const success = await addCategory(newCategory.trim())
+      if (success) {
+        await fetchCategories()
+        setNewCategory("")
+        toast({
+          title: "Categoría añadida",
+          description: "La categoría se ha añadido con éxito.",
+        })
+      } else {
+        throw new Error("No se pudo añadir la categoría")
+      }
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "No se pudo añadir la categoría. Por favor, intente de nuevo.",
+      })
+    } finally {
+      setIsLoading(false)
     }
   }
 
@@ -91,6 +99,8 @@ export default function CategoriesManager() {
         title: "Error",
         description: "No se pudo actualizar el orden de las categorías.",
       })
+      // Revertir cambios en caso de error
+      await fetchCategories()
     }
   }
 
@@ -105,16 +115,6 @@ export default function CategoriesManager() {
             value={newCategory}
             onChange={(e) => setNewCategory(e.target.value)}
             placeholder="Ej: Especialidades del Chef"
-          />
-        </div>
-        <div>
-          <Label htmlFor="category-order">Orden</Label>
-          <Input
-            id="category-order"
-            type="number"
-            value={newCategoryOrder}
-            onChange={(e) => setNewCategoryOrder(Number.parseInt(e.target.value))}
-            min="0"
           />
         </div>
         <Button type="submit" disabled={isLoading}>
@@ -150,4 +150,3 @@ export default function CategoriesManager() {
     </div>
   )
 }
-
