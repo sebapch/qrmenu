@@ -115,7 +115,7 @@ export default function EditMenu({ categories }) {
     <div className="mt-8 bg-white p-6 rounded-lg shadow-md">
       <h2 className="font-bold text-xl mb-4">Editar Menú</h2>
       <Accordion type="single" collapsible className="w-full">
-        {categoriesArray.map((category) => (
+        {categoriesArray?.map((category) => (
           <AccordionItem key={category.name} value={category.name}>
             <AccordionTrigger>{category.name}</AccordionTrigger>
             <AccordionContent>

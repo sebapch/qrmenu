@@ -47,7 +47,7 @@ export default function Home() {
         const validCategoriesData = categoriesData || {};
 
         // Agregar customizable a todos los platos
-        const menuWithCustomizable = validMenuData.map((dish) => ({
+        const menuWithCustomizable = validMenuData?.map((dish) => ({
           ...dish,
           customizable: dish.customizable || false,
           isVegetarian: dish.isVegetarian || false,
@@ -156,7 +156,7 @@ export default function Home() {
         <CategorySelector categories={filteredCategories} />
       </nav>
       <main className="container mx-auto px-4 py-6 flex-grow">
-        {filteredCategories.map((category) => (
+        {filteredCategories?.map((category) => (
           <section key={category} id={category} className="mb-8">
             <h2 className="text-2xl font-serif font-bold mb-4 text-stone-800 border-b border-stone-300 pb-2">
               {category}

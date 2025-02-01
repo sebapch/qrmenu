@@ -47,7 +47,7 @@ export default function Cart({ cart, menu, updateCart }) {
               <p>Tu carrito está vacío</p>
             ) : (
               <>
-                {cartItems.map((item) => (
+                {cartItems?.map((item) => (
                   <div key={item.dishId} className="flex justify-between items-start mb-4 border-b pb-2">
                     <div>
                       <span className="font-semibold">

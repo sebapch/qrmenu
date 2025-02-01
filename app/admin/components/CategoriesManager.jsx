@@ -170,7 +170,7 @@ export default function CategoriesManager() {
       </div>
 
       <div className="space-y-2 min-h-[50px]">
-        {categoryArray.map((category, index) => (
+        {categoryArray?.map((category, index) => (
           <div
             key={category.name}
             className="bg-gray-100 p-3 rounded-lg flex justify-between items-center shadow-sm hover:shadow transition-shadow duration-200"

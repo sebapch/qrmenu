@@ -46,7 +46,7 @@ export default function CategorySelector({ categories }) {
         ref={scrollContainerRef}
         onScroll={handleScroll}
       >
-        {categories.map((category, index) => (
+        {categories?.map((category, index) => (
           <a
             key={index}
             href={`#${category}`}

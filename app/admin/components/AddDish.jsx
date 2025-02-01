@@ -132,7 +132,7 @@ export default function AddDish({ categories, setDishes }) {
               <SelectValue placeholder="Selecciona una categoría" />
             </SelectTrigger>
             <SelectContent>
-              {categoriesArray.map((category) => (
+              {categoriesArray?.map((category) => (
                 <SelectItem key={category.name} value={category.name}>
                   {category.name}
                 </SelectItem>
