@@ -1,25 +1,29 @@
-'use client'
-import { useState, useEffect } from 'react'
-import Image from 'next/image'
+"use client"
+import { useState, useEffect } from "react"
+import Image from "next/image"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import Link from 'next/link'
+import { Button } from "@/components/ui/button"
+import { Minus, Plus, Leaf, Wheat } from "lucide-react"
+import Cart from "../components/cart"
 
 export default function Home() {
   const [menu, setMenu] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [cart, setCart] = useState({})
+  const [observation, setObservation] = useState("")
 
   useEffect(() => {
     const fetchMenu = async () => {
       try {
         const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/dishes`)
         if (!response.ok) {
-          throw new Error('Error al cargar el menú')
+          throw new Error("Error al cargar el menú")
         }
         const data = await response.json()
         const dishes = JSON.parse(data?.body).dishes || []
-        
-        // Agrupar platos por categoría
+
+        // Group dishes by category
         const groupedMenu = dishes.reduce((acc, dish) => {
           const category = dish.category
           if (!acc[category]) {
@@ -31,7 +35,7 @@ export default function Home() {
 
         setMenu(groupedMenu)
       } catch (err) {
-        console.error('Error fetching menu:', err)
+        console.error("Error fetching menu:", err)
         setError(err.message)
       } finally {
         setIsLoading(false)
@@ -40,6 +44,13 @@ export default function Home() {
 
     fetchMenu()
   }, [])
+
+  const updateCart = (dishId, quantity) => {
+    setCart((prevCart) => ({
+      ...prevCart,
+      [dishId]: (prevCart[dishId] || 0) + quantity,
+    }))
+  }
 
   if (isLoading) {
     return (
@@ -59,19 +70,29 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-stone-100 flex flex-col">
-      <header className="bg-stone-800 text-white py-6 sticky top-0 z-10 shadow-md">
+      <header className="bg-stone-800 text-white py-4 sticky top-0 z-10 shadow-md">
         <div className="container mx-auto px-4">
-          <h1 className="text-3xl font-serif font-bold text-center">Le Gourmet Exquis</h1>
+          <h1 className="text-2xl font-serif font-bold text-center">Le Gourmet Exquis</h1>
           <p className="text-center mt-1 text-stone-300 italic text-sm">Una experiencia culinaria excepcional</p>
+          <div className="flex justify-center mt-2 space-x-2">
+            <Button variant="ghost" size="icon">
+              <Image src="/placeholder.svg?height=24&width=24" alt="Español" width={24} height={24} />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <Image src="/placeholder.svg?height=24&width=24" alt="English" width={24} height={24} />
+            </Button>
+            <Button variant="ghost" size="icon">
+              <Image src="/placeholder.svg?height=24&width=24" alt="Italiano" width={24} height={24} />
+            </Button>
+          </div>
         </div>
       </header>
-      <div className="h-[76px]"></div>
-      <nav className="bg-stone-200 shadow-sm mt-4">
+      <nav className="bg-stone-200 shadow-sm sticky top-[76px] z-10">
         <div className="container mx-auto px-4 py-2 overflow-x-auto whitespace-nowrap">
           {Object.keys(menu).map((category) => (
-            <a 
-              key={category} 
-              href={`#${category}`} 
+            <a
+              key={category}
+              href={`#${category}`}
               className="inline-block px-3 py-2 text-stone-800 font-semibold hover:bg-stone-300 rounded-md mr-2"
             >
               {category}
@@ -81,47 +102,82 @@ export default function Home() {
       </nav>
       <main className="container mx-auto px-4 py-6 flex-grow">
         {Object.keys(menu).map((category) => (
-          <section key={category} id={category} className="mb-8 pt-4">
+          <section key={category} id={category} className="mb-8">
             <h2 className="text-2xl font-serif font-bold mb-4 text-stone-800 border-b border-stone-300 pb-2">
               {category}
             </h2>
-            <div className="grid gap-6 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+            <div className="space-y-4">
               {menu[category].map((dish) => (
-                <Card key={dish.dishId} className="overflow-hidden bg-white p-4 shadow rounded-lg">
-                  {dish.image && (
-                    <Image
-                      src={dish.image}
-                      alt={dish.name}
-                      width={300}
-                      height={200}
-                      className="rounded-md object-cover mb-4"
-                    />
-                  )}
-                  <CardHeader>
-                    <CardTitle>{dish.name}</CardTitle>
-                    <CardDescription>{dish.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-lg font-semibold text-stone-800">Precio: {dish.price}</p>
-                  </CardContent>
+                <Card key={dish.dishId} className="overflow-hidden bg-white shadow rounded-lg">
+                  <div className="flex flex-col md:flex-row">
+                    {dish.image && (
+                      <Image
+                        src={dish.image || "/placeholder.svg"}
+                        alt={dish.name}
+                        width={150}
+                        height={150}
+                        className="object-cover w-full h-40 md:w-40 md:h-auto"
+                      />
+                    )}
+                    <div className="flex-grow p-4">
+                      <CardHeader className="p-0">
+                        <CardTitle className="flex items-center">
+                          {dish.name}
+                          {dish.isVegetarian && <Leaf className="ml-2 text-green-500" size={16} />}
+                          {dish.isGlutenFree && <Wheat className="ml-2 text-amber-500" size={16} />}
+                        </CardTitle>
+                        <CardDescription>{dish.description}</CardDescription>
+                      </CardHeader>
+                      <CardContent className="p-0 mt-2">
+                        <p className="text-lg font-semibold text-stone-800">Precio: {dish.price}</p>
+                      </CardContent>
+                      <CardFooter className="p-0 mt-4">
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => updateCart(dish.dishId, -1)}
+                            disabled={!cart[dish.dishId]}
+                          >
+                            <Minus className="h-4 w-4" />
+                          </Button>
+                          <span className="w-8 text-center">{cart[dish.dishId] || 0}</span>
+                          <Button variant="outline" size="icon" onClick={() => updateCart(dish.dishId, 1)}>
+                            <Plus className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardFooter>
+                    </div>
+                  </div>
                 </Card>
               ))}
             </div>
           </section>
         ))}
       </main>
-      <Link href="/admin" className="mt-8 inline-block text-center w-full text-stone-600 hover:text-stone-800">
-        Administrar Menú
-      </Link>
+
+      <Cart cart={cart} menu={menu} updateCart={updateCart} observation={observation} setObservation={setObservation} />
+
       <footer className="bg-stone-800 text-white py-4 mt-8">
         <div className="container mx-auto px-4 text-center">
           <p className="text-sm">Desarrollado por Juan Pérez</p>
           <p className="text-sm mt-1">
-            <a href="mailto:juan@example.com" className="hover:underline">juan@example.com</a> | 
-            <a href="https://github.com/juanperez" target="_blank" rel="noopener noreferrer" className="ml-2 hover:underline">GitHub</a>
+            <a href="mailto:juan@example.com" className="hover:underline">
+              juan@example.com
+            </a>{" "}
+            |
+            <a
+              href="https://github.com/juanperez"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="ml-2 hover:underline"
+            >
+              GitHub
+            </a>
           </p>
         </div>
       </footer>
     </div>
   )
 }
+
